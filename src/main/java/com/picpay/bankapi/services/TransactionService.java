@@ -28,6 +28,10 @@ public class TransactionService {
         if (payerAccount.getBalance() < params.getValue()) {
             throw new InvalidOperationException("Saldo insuficiente");
         }
+
+        if (payerAccount.getId().equals(payeeAccount.getId())) {
+            throw new InvalidOperationException("A conta de origem e destino devem ser diferentes");
+        }
         
         var transaction = Transaction
                 .builder()
