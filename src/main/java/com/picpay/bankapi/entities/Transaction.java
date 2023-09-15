@@ -1,13 +1,12 @@
 package com.picpay.bankapi.entities;
 
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
-
 import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Data
 @Table
@@ -15,22 +14,17 @@ import lombok.AllArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Account {
+public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String name;
-
-    @Column(unique = true)
-    private String cpfCnpj;
-
-    @Column(unique = true)
-    private String email;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    private Account account;
 
     @Column
-    private String password;
+    private double value;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
