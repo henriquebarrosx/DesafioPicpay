@@ -1,14 +1,15 @@
 package com.picpay.bankapi.services;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.picpay.bankapi.entities.Account;
 import com.picpay.bankapi.controllers.DTOs.NewUserDTO;
+import com.picpay.bankapi.exceptions.NotFoundException;
 import com.picpay.bankapi.repositories.AccountRepository;
 import com.picpay.bankapi.exceptions.AccountAlreadyRegisteredException;
 
-import java.time.LocalDateTime;
 
 @Service
 @AllArgsConstructor
@@ -23,6 +24,7 @@ public class AccountService {
                 .cpfCnpj(params.getCpfCnpj())
                 .password(params.getPassword())
                 .type(params.getType())
+                .balance(params.getBalance())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -35,5 +37,10 @@ public class AccountService {
         }
 
         return accountRepository.save(account);
+    }
+
+    public Account findById(Long id) {
+        return accountRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuário com id " + id + " não encontrado"));
     }
 }

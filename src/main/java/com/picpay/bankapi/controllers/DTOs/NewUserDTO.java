@@ -7,6 +7,7 @@ import lombok.Data;
 public class NewUserDTO {
     private AccountTypeEnum type;
     private String name;
+    private double balance;
     private String cpfCnpj;
     private String email;
     private String password;

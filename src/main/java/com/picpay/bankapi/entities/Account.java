@@ -25,6 +25,9 @@ public class Account {
     private String name;
 
     @Column
+    private double balance;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private AccountTypeEnum type;
 
