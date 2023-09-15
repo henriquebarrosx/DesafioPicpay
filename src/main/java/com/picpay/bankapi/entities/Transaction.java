@@ -20,8 +20,12 @@ public class Transaction {
     private Long id;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "account_id", referencedColumnName = "id")
-    private Account account;
+    @JoinColumn(name = "payer_id", referencedColumnName = "id")
+    private Account payer;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "payee_id", referencedColumnName = "id")
+    private Account payee;
 
     @Column
     private double value;
