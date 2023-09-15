@@ -2,6 +2,7 @@ package com.picpay.bankapi.entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.picpay.bankapi.enums.AccountTypeEnum;
 
 import lombok.Data;
 import lombok.Builder;
@@ -22,6 +23,10 @@ public class Account {
 
     @Column
     private String name;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountTypeEnum type;
 
     @Column(unique = true)
     private String cpfCnpj;
