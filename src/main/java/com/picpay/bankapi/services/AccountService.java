@@ -43,4 +43,8 @@ public class AccountService {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Usuário com id " + id + " não encontrado"));
     }
+
+    public Account update(Account account) {
+        return accountRepository.save(account);
+    }
 }

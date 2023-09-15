@@ -30,6 +30,9 @@ public class Transaction {
     @Column
     private double value;
 
+    @Column(name = "is_reverted")
+    private Boolean isReverted = false;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

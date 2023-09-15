@@ -24,8 +24,8 @@ public class GlobalExceptionHandler {
                 .body(new ExceptionDTO(HttpStatus.NOT_FOUND.value(), e.getMessage()));
     }
 
-    @ExceptionHandler(InvalidOperationException.class)
-    public ResponseEntity<ExceptionDTO> invalidOperationException(InvalidOperationException e) {
+    @ExceptionHandler(IllegalOperationException.class)
+    public ResponseEntity<ExceptionDTO> IllegalOperationException(IllegalOperationException e) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
