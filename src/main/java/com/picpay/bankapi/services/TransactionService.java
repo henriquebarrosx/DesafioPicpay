@@ -21,6 +21,10 @@ public class TransactionService {
         var payerAccount = accountService.findById(params.getPayerId());
         var payeeAccount = accountService.findById(params.getPayeeId());
 
+        if (payerAccount.getId().equals(payeeAccount.getId())) {
+            throw new InvalidOperationException("A conta de origem e destino devem ser diferentes");
+        }
+
         if (payerAccount.getType().equals(AccountTypeEnum.SHOPKEEPER)) {
             throw new InvalidOperationException("Apenas usuário do tipo comum pode efetuar transferências");
         }
@@ -29,10 +33,12 @@ public class TransactionService {
             throw new InvalidOperationException("Saldo insuficiente");
         }
 
-        if (payerAccount.getId().equals(payeeAccount.getId())) {
-            throw new InvalidOperationException("A conta de origem e destino devem ser diferentes");
-        }
-        
+        payerAccount.setBalance(payerAccount.getBalance() - params.getValue());
+        accountService.update(payerAccount);
+
+        payeeAccount.setBalance(payeeAccount.getBalance() + params.getValue());
+        accountService.update(payeeAccount);
+
         var transaction = Transaction
                 .builder()
                 .value(params.getValue())
