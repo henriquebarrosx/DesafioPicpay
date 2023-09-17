@@ -1,5 +1,6 @@
-package com.picpay.bankapi.entities;
+package com.picpay.bankapi.transaction;
 
+import com.picpay.bankapi.account.Account;
 import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;

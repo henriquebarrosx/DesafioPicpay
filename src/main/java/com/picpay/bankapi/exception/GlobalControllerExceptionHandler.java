@@ -1,21 +1,12 @@
-package com.picpay.bankapi.exceptions;
+package com.picpay.bankapi.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.picpay.bankapi.controllers.DTOs.ExceptionDTO;
-
 @ControllerAdvice
 public class GlobalControllerExceptionHandler {
-
-    @ExceptionHandler(AccountAlreadyRegisteredException.class)
-    public ResponseEntity<ExceptionDTO> handleExistentAccount(Exception ex) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
-    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ExceptionDTO> handleNotFoundException(Exception ex) {

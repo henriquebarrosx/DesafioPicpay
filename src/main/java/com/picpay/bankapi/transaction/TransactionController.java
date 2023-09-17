@@ -1,8 +1,4 @@
-package com.picpay.bankapi.controllers;
-
-import com.picpay.bankapi.services.TransactionService;
-import com.picpay.bankapi.controllers.DTOs.NewTransactionDTO;
-import com.picpay.bankapi.controllers.DTOs.TransactionResponseDTO;
+package com.picpay.bankapi.transaction;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;

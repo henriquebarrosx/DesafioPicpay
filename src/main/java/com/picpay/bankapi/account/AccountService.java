@@ -1,15 +1,12 @@
-package com.picpay.bankapi.services;
+package com.picpay.bankapi.account;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.picpay.bankapi.entities.Account;
-import com.picpay.bankapi.controllers.DTOs.NewUserDTO;
-import com.picpay.bankapi.exceptions.NotFoundException;
-import com.picpay.bankapi.repositories.AccountRepository;
-import com.picpay.bankapi.exceptions.AccountAlreadyRegisteredException;
+import com.picpay.bankapi.exception.NotFoundException;
+import com.picpay.bankapi.exception.IllegalOperationException;
 
 
 @Service
@@ -17,7 +14,7 @@ import com.picpay.bankapi.exceptions.AccountAlreadyRegisteredException;
 public class AccountService {
     private final AccountRepository accountRepository;
 
-    public Account create(NewUserDTO params) {
+    public Account create(NewAccountDTO params) {
         var account = Account
                 .builder()
                 .name(params.getName())
@@ -34,7 +31,7 @@ public class AccountService {
                 .findByCpfCnpjOrEmail(params.getCpfCnpj(), params.getEmail());
 
         if (foundAccount.isPresent()) {
-            throw new AccountAlreadyRegisteredException("CPF/CNPJ or e-mail already registered ");
+            throw new IllegalOperationException("CPF/CNPJ or e-mail already registered ");
         }
 
         return accountRepository.save(account);

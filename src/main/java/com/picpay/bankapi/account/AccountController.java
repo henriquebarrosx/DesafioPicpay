@@ -1,13 +1,9 @@
-package com.picpay.bankapi.controllers;
+package com.picpay.bankapi.account;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import com.picpay.bankapi.services.AccountService;
-import com.picpay.bankapi.controllers.DTOs.NewUserDTO;
-import com.picpay.bankapi.controllers.DTOs.AccountIdDTO;
 
 @AllArgsConstructor
 @RestController
@@ -17,7 +13,7 @@ public class AccountController {
     private final AccountService accountService;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<AccountIdDTO> signUp(@RequestBody NewUserDTO params) {
+    public ResponseEntity<AccountIdDTO> signUp(@RequestBody NewAccountDTO params) {
         var account = accountService.create(params);
         return ResponseEntity.status(HttpStatus.CREATED).body(new AccountIdDTO(account.getId()));
     }

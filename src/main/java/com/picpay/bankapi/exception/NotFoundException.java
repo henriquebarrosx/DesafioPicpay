@@ -1,4 +1,4 @@
-package com.picpay.bankapi.exceptions;
+package com.picpay.bankapi.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

@@ -1,10 +1,9 @@
-package com.picpay.bankapi.entities;
+package com.picpay.bankapi.account;
 
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import com.picpay.bankapi.enums.AccountTypeEnum;
 
 import lombok.Data;
 import lombok.Builder;

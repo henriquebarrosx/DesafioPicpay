@@ -1,4 +1,4 @@
-package com.picpay.bankapi.controllers.DTOs;
+package com.picpay.bankapi.account;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

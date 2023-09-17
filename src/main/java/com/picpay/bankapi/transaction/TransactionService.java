@@ -1,12 +1,11 @@
-package com.picpay.bankapi.services;
+package com.picpay.bankapi.transaction;
 
-import com.picpay.bankapi.entities.Account;
-import com.picpay.bankapi.entities.Transaction;
-import com.picpay.bankapi.enums.AccountTypeEnum;
-import com.picpay.bankapi.exceptions.NotFoundException;
-import com.picpay.bankapi.repositories.TransactionRepository;
-import com.picpay.bankapi.controllers.DTOs.NewTransactionDTO;
-import com.picpay.bankapi.exceptions.IllegalOperationException;
+import com.picpay.bankapi.account.AccountService;
+import com.picpay.bankapi.account.Account;
+import com.picpay.bankapi.email.EmailService;
+import com.picpay.bankapi.account.AccountTypeEnum;
+import com.picpay.bankapi.exception.NotFoundException;
+import com.picpay.bankapi.exception.IllegalOperationException;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;

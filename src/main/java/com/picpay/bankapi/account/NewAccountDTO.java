@@ -1,12 +1,10 @@
-package com.picpay.bankapi.controllers.DTOs;
+package com.picpay.bankapi.account;
 
-import com.picpay.bankapi.enums.AccountTypeEnum;
 import lombok.Data;
-
 import java.math.BigDecimal;
 
 @Data
-public class NewUserDTO {
+public class NewAccountDTO {
     private AccountTypeEnum type;
     private String name;
     private BigDecimal balance;

@@ -1,6 +1,6 @@
-package com.picpay.bankapi.services;
+package com.picpay.bankapi.email;
 
-import com.picpay.bankapi.entities.Account;
+import com.picpay.bankapi.account.Account;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

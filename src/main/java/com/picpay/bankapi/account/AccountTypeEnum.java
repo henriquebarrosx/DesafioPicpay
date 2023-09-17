@@ -1,4 +1,4 @@
-package com.picpay.bankapi.enums;
+package com.picpay.bankapi.account;
 
 import lombok.AllArgsConstructor;
 
