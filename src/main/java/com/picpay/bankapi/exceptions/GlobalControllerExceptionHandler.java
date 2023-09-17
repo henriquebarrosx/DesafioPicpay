@@ -8,26 +8,26 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.picpay.bankapi.controllers.DTOs.ExceptionDTO;
 
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalControllerExceptionHandler {
 
     @ExceptionHandler(AccountAlreadyRegisteredException.class)
-    public ResponseEntity<ExceptionDTO> accountAlreadyRegisteredException(AccountAlreadyRegisteredException e) {
+    public ResponseEntity<ExceptionDTO> handleExistentAccount(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+                .body(new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ExceptionDTO> accountNotFound(NotFoundException e) {
+    public ResponseEntity<ExceptionDTO> handleNotFoundException(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new ExceptionDTO(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+                .body(new ExceptionDTO(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalOperationException.class)
-    public ResponseEntity<ExceptionDTO> IllegalOperationException(IllegalOperationException e) {
+    public ResponseEntity<ExceptionDTO> handleBadRequestException(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+                .body(new ExceptionDTO(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
     }
 }
