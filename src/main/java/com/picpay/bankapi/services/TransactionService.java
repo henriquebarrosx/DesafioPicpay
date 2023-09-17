@@ -20,8 +20,9 @@ import org.springframework.stereotype.Service;
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
-    
-    public Transaction create(NewTransactionDTO params) {
+    private final EmailService emailService;
+
+    public Transaction createTransaction(NewTransactionDTO params) {
         var payerAccount = accountService.findById(params.getPayerId());
         var payeeAccount = accountService.findById(params.getPayeeId());
 
@@ -39,7 +40,15 @@ public class TransactionService {
         validateTransaction(transaction, payerAccount, payeeAccount);
         accountService.subtractBalance(payerAccount, transaction.getValue());
         accountService.increaseBalance(payeeAccount, transaction.getValue());
+
+        var emailMessage = "You received a transaction of " + parseTransactionToCurrency(transaction.getValue());
+        emailService.sendEmail(payeeAccount, emailMessage);
+
         return transactionRepository.save(transaction);
+    }
+
+    String parseTransactionToCurrency(BigDecimal amount) {
+        return NumberFormat.getCurrencyInstance().format(amount);
     }
 
     void validateTransaction(Transaction transaction, Account payerAccount, Account payeeAccount) {

@@ -19,7 +19,7 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<TransactionResponseDTO> create(@RequestBody NewTransactionDTO params) {
-        var transaction = transactionService.create(params);
+        var transaction = transactionService.createTransaction(params);
 
         var response = TransactionResponseDTO
                 .builder()
