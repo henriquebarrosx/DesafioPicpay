@@ -30,10 +30,10 @@ public class AccountService {
                 .build();
 
         var foundAccount = accountRepository
-                .existsByCpfCnpjOrEmail(params.getCpfCnpj(), params.getEmail());
+                .findByCpfCnpjOrEmail(params.getCpfCnpj(), params.getEmail());
 
         if (foundAccount.isPresent()) {
-            throw new AccountAlreadyRegisteredException("CPF/CNPJ ou e-mail já existente");
+            throw new AccountAlreadyRegisteredException("CPF/CNPJ or e-mail already registered ");
         }
 
         return accountRepository.save(account);
@@ -51,10 +51,6 @@ public class AccountService {
 
     public Account findById(Long id) {
         return accountRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Usuário com id " + id + " não encontrado"));
-    }
-
-    public Account update(Account account) {
-        return accountRepository.save(account);
+                .orElseThrow(() -> new NotFoundException(String.format("User %s not found", id)));
     }
 }

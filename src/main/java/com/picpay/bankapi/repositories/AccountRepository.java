@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Query(value = "SELECT * FROM account acc WHERE acc.cpf_cnpj = :cpf_cnpj OR acc.email = :email", nativeQuery = true)
-    Optional<Account> existsByCpfCnpjOrEmail(
+    Optional<Account> findByCpfCnpjOrEmail(
             @Param("cpf_cnpj") String cpfCnpj,
             @Param("email") String email);
 }
