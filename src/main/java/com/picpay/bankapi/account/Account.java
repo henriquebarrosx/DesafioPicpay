@@ -21,28 +21,28 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private BigDecimal balance;
 
-    @Column
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private AccountTypeEnum type;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String cpfCnpj;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column
+    @Column(nullable = false)
     private String password;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 }
