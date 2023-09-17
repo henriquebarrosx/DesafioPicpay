@@ -1,6 +1,8 @@
 package com.picpay.bankapi.entities;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.picpay.bankapi.enums.AccountTypeEnum;
 
@@ -25,7 +27,7 @@ public class Account {
     private String name;
 
     @Column
-    private double balance;
+    private BigDecimal balance;
 
     @Column
     @Enumerated(EnumType.STRING)

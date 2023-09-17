@@ -28,7 +28,7 @@ public class Transaction {
     private Account payee;
 
     @Column
-    private double value;
+    private BigDecimal value;
 
     @Column(name = "is_reverted")
     private Boolean isReverted = false;

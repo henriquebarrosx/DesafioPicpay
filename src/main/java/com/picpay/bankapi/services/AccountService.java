@@ -39,6 +39,16 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
+    public void increaseBalance(Account account, BigDecimal amount) {
+        account.setBalance(account.getBalance().add(amount));
+        accountRepository.save(account);
+    }
+
+    public void subtractBalance(Account account, BigDecimal amount) {
+        account.setBalance(account.getBalance().subtract(amount));
+        accountRepository.save(account);
+    }
+
     public Account findById(Long id) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Usuário com id " + id + " não encontrado"));
