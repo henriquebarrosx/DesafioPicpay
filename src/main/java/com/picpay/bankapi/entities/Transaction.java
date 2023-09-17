@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,19 +21,22 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "payer_id", referencedColumnName = "id")
     private Account payer;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "payee_id", referencedColumnName = "id")
     private Account payee;
 
     @Column
     private BigDecimal value;
 
-    @Column(name = "is_reverted")
-    private Boolean isReverted = false;
+    @Column(name = "was_reverted")
+    private Boolean wasReversed;
+
+    @Column(name = "is_chargeback")
+    private Boolean isChargeback;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

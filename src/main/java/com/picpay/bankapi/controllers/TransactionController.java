@@ -1,8 +1,8 @@
 package com.picpay.bankapi.controllers;
 
 import com.picpay.bankapi.services.TransactionService;
-import com.picpay.bankapi.controllers.DTOs.TransactionIdDTO;
 import com.picpay.bankapi.controllers.DTOs.NewTransactionDTO;
+import com.picpay.bankapi.controllers.DTOs.TransactionResponseDTO;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,14 +18,22 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping
-    public ResponseEntity<TransactionIdDTO> create(@RequestBody NewTransactionDTO params) {
+    public ResponseEntity<TransactionResponseDTO> create(@RequestBody NewTransactionDTO params) {
         var transaction = transactionService.create(params);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new TransactionIdDTO(transaction.getId()));
+
+        var response = TransactionResponseDTO
+                .builder()
+                .id(transaction.getId())
+                .value(transaction.getValue())
+                .timestamp(transaction.getCreatedAt())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}/reverse")
     public ResponseEntity<Boolean> reverse(@PathVariable Long id) {
-        var isReverted = transactionService.reverse(id);
-        return ResponseEntity.status(HttpStatus.OK).body(isReverted);
+        transactionService.reverseTransaction(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

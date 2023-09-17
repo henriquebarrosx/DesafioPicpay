@@ -1,5 +1,6 @@
 package com.picpay.bankapi.services;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
