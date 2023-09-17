@@ -8,6 +8,8 @@ import com.picpay.bankapi.repositories.TransactionRepository;
 import com.picpay.bankapi.controllers.DTOs.NewTransactionDTO;
 import com.picpay.bankapi.exceptions.IllegalOperationException;
 
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -66,23 +68,26 @@ public class TransactionService {
         transactionRepository.save(transaction);
 
         var payerAccount = accountService.findById(transaction.getPayer().getId());
-        accountService.increaseBalance(payerAccount, transaction.getValue());
-
         var payeeAccount = accountService.findById(transaction.getPayee().getId());
-        accountService.subtractBalance(payeeAccount, transaction.getValue());
 
-        var chargebackTransaction = Transaction
+        accountService.increaseBalance(payerAccount, transaction.getValue());
+        accountService.subtractBalance(payeeAccount, transaction.getValue());
+        createChargebackTransaction(transaction.getValue(), payeeAccount, payerAccount);
+    }
+
+    void createChargebackTransaction(BigDecimal amount, Account payer, Account payee) {
+        var transaction = Transaction
                 .builder()
-                .value(transaction.getValue())
-                .payer(payeeAccount)
-                .payee(payerAccount)
+                .value(amount)
+                .payer(payer)
+                .payee(payee)
                 .isChargeback(true)
                 .wasReversed(false)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        transactionRepository.save(chargebackTransaction);
+        transactionRepository.save(transaction);
     }
 
     public Transaction findById(Long id) {
