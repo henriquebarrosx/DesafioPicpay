@@ -65,6 +65,13 @@ public class TransactionService {
                 .orElseThrow(() -> new NotFoundException(String.format("Transaction %s not found.", transactionId)));
     }
 
+    public List<TransactionDTO> findAll() {
+        return transactionRepository
+                .findAll().stream()
+                .map(transactionDTOMapper)
+                .collect(Collectors.toList());
+    }
+
     private void validateTransactionRegistration(Transaction transaction, Account payerAccount, Account payeeAccount) {
         if (payerAccount.getId().equals(payeeAccount.getId())) {
             throw new IllegalOperationException("Payer and payee account should be different.");
