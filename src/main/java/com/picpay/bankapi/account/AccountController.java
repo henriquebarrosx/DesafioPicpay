@@ -13,8 +13,9 @@ public class AccountController {
     private final AccountService accountService;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<AccountIdDTO> signUp(@RequestBody NewAccountDTO params) {
-        var account = accountService.create(params);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new AccountIdDTO(account.getId()));
+    public ResponseEntity<AccountIdDTO> signUp(@RequestBody AccountDTO accountDTO) {
+        var account = accountService.createAccount(accountDTO);
+        var accountId = new AccountIdDTO(account.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(accountId);
     }
 }

@@ -11,24 +11,18 @@ import org.springframework.web.bind.annotation.*;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final TransactionResponseDTOMapper transactionResponseDTOMapper;
 
     @PostMapping
-    public ResponseEntity<TransactionResponseDTO> create(@RequestBody NewTransactionDTO params) {
-        var transaction = transactionService.createTransaction(params);
-
-        var response = TransactionResponseDTO
-                .builder()
-                .id(transaction.getId())
-                .value(transaction.getValue())
-                .timestamp(transaction.getCreatedAt())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<TransactionResponseDTO> registerTransaction(@RequestBody TransactionDTO transactionDTO) {
+        var transaction = transactionService.createTransaction(transactionDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionResponseDTOMapper.apply(transaction));
     }
 
-    @GetMapping("/{id}/reverse")
-    public ResponseEntity<Boolean> reverse(@PathVariable Long id) {
-        transactionService.reverseTransaction(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @GetMapping("/{id}/chargeback")
+    public ResponseEntity<TransactionIdDTO> registerChargeback(@PathVariable Long id) {
+        Transaction chargeback = transactionService.createChargeback(id);
+        var transactionID = new TransactionIdDTO(chargeback.getId());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(transactionID);
     }
 }

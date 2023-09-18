@@ -7,7 +7,6 @@ import com.picpay.bankapi.account.AccountTypeEnum;
 import com.picpay.bankapi.exception.NotFoundException;
 import com.picpay.bankapi.exception.IllegalOperationException;
 
-import java.util.List;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
@@ -20,16 +19,15 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final TransactionBuilder transactionBuilder;
     private final AccountService accountService;
     private final EmailService emailService;
 
-    public Transaction createTransaction(NewTransactionDTO params) {
-        var payerAccount = accountService.findById(params.getPayerId());
-        var payeeAccount = accountService.findById(params.getPayeeId());
+    public Transaction createTransaction(TransactionDTO newTransactionParams) {
+        var payerAccount = accountService.findById(newTransactionParams.payerId());
+        var payeeAccount = accountService.findById(newTransactionParams.payeeId());
 
-        var transaction = transactionBuilder.buildDefaultTransaction(params.getValue(), payerAccount, payeeAccount);
-        validateTransactionCreation(transaction, payerAccount, payeeAccount);
+        var transaction = buildDefaulTransaction(newTransactionParams.value(), payerAccount, payeeAccount);
+        validateTransactionRegistration(transaction, payerAccount, payeeAccount);
 
         accountService.subtractBalance(payerAccount, transaction.getValue());
         accountService.increaseBalance(payeeAccount, transaction.getValue());
@@ -44,28 +42,30 @@ public class TransactionService {
         return NumberFormat.getCurrencyInstance().format(amount);
     }
 
-    public void reverseTransaction(Long id) {
-        var transaction = getReversedTransaction(findById(id));
+    public Transaction createChargeback(Long transactionTargetId) {
+        var transactionTarget = findById(transactionTargetId);
+        validateIfAlreadyBeenReversed(transactionTarget);
 
-        if (transaction.getWasReversed().equals(true) || transaction.getIsChargeback().equals(true)) {
-            throw new IllegalOperationException("The transaction cannot be reverted.");
-        }
+        var payerAccount = accountService.findById(transactionTarget.getPayer().getId());
+        var payeeAccount = accountService.findById(transactionTarget.getPayee().getId());
 
-        var payerAccount = accountService.findById(transaction.getPayer().getId());
-        var payeeAccount = accountService.findById(transaction.getPayee().getId());
-        var chargeback = transactionBuilder.buildChargebackTransaction(transaction.getValue(), payeeAccount, payerAccount);
+        var chargeback = buildChargeback(transactionTarget.getValue(), payeeAccount, payerAccount);
+        transactionRepository.save(chargeback);
 
-        accountService.increaseBalance(payerAccount, transaction.getValue());
-        accountService.subtractBalance(payeeAccount, transaction.getValue());
-        transactionRepository.saveAll(List.of(transaction, chargeback));
+        blockNewChargebackRequests(transactionTarget);
+
+        accountService.increaseBalance(payerAccount, transactionTarget.getValue());
+        accountService.subtractBalance(payeeAccount, transactionTarget.getValue());
+
+        return chargeback;
     }
 
-    public Transaction findById(Long id) {
-        return transactionRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Transaction %s not found.", id)));
+    public Transaction findById(Long transactionId) {
+        return transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new NotFoundException(String.format("Transaction %s not found.", transactionId)));
     }
 
-    void validateTransactionCreation(Transaction transaction, Account payerAccount, Account payeeAccount) {
+    private void validateTransactionRegistration(Transaction transaction, Account payerAccount, Account payeeAccount) {
         if (payerAccount.getId().equals(payeeAccount.getId())) {
             throw new IllegalOperationException("Payer and payee account should be different.");
         }
@@ -79,9 +79,45 @@ public class TransactionService {
         }
     }
 
-    Transaction getReversedTransaction(Transaction transaction) {
+    private void validateIfAlreadyBeenReversed(Transaction transaction) {
+        if (transaction.getWasReversed().equals(true)) {
+            throw new IllegalOperationException("Transaction only can be reverted once.");
+        }
+
+        if (transaction.getIsChargeback().equals(true)) {
+            throw new IllegalOperationException("The transaction is not able to be reversed.");
+        }
+    }
+
+    private void blockNewChargebackRequests(Transaction transaction) {
         transaction.setWasReversed(true);
         transaction.setUpdatedAt(LocalDateTime.now());
-        return transaction;
+        transactionRepository.save(transaction);
+    }
+
+    private Transaction buildDefaulTransaction(BigDecimal amount, Account payer, Account payee) {
+        return Transaction
+                .builder()
+                .value(amount)
+                .payer(payer)
+                .payee(payee)
+                .wasReversed(false)
+                .isChargeback(false)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private Transaction buildChargeback(BigDecimal amount, Account payer, Account payee) {
+        return Transaction
+                .builder()
+                .value(amount)
+                .payer(payer)
+                .payee(payee)
+                .isChargeback(true)
+                .wasReversed(false)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
     }
 }

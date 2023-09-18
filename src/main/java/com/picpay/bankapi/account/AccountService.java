@@ -1,7 +1,7 @@
 package com.picpay.bankapi.account;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,24 +13,15 @@ import com.picpay.bankapi.exception.IllegalOperationException;
 @AllArgsConstructor
 public class AccountService {
     private final AccountRepository accountRepository;
+    private final AccountDTOMapper accountDTOMapper;
 
-    public Account create(NewAccountDTO params) {
-        var account = Account
-                .builder()
-                .name(params.getName())
-                .email(params.getEmail())
-                .cpfCnpj(params.getCpfCnpj())
-                .password(params.getPassword())
-                .type(params.getType())
-                .balance(params.getBalance())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+    public Account createAccount(AccountDTO accountDTO) {
+        Account account = accountDTOMapper.apply(accountDTO);
 
-        var foundAccount = accountRepository
-                .findByCpfCnpjOrEmail(params.getCpfCnpj(), params.getEmail());
+        var accountWithCpfCnpjOrEmail = accountRepository
+                .findByCpfCnpjOrEmail(accountDTO.cpfCnpj(), accountDTO.email());
 
-        if (foundAccount.isPresent()) {
+        if (accountWithCpfCnpjOrEmail.isPresent()) {
             throw new IllegalOperationException("CPF/CNPJ or e-mail already registered ");
         }
 
