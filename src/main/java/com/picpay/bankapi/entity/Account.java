@@ -1,4 +1,4 @@
-package com.picpay.bankapi.account;
+package com.picpay.bankapi.entity;
 
 import jakarta.persistence.*;
 

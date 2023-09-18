@@ -1,4 +1,4 @@
-package com.picpay.bankapi.exception;
+package com.picpay.bankapi.web.dto;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;

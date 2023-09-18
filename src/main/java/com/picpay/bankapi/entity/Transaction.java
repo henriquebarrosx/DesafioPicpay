@@ -1,4 +1,4 @@
-package com.picpay.bankapi.transaction;
+package com.picpay.bankapi.entity;
 
 import lombok.Data;
 import lombok.Builder;
@@ -8,8 +8,6 @@ import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
-import com.picpay.bankapi.account.Account;
 
 @Data
 @Table

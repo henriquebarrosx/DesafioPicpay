@@ -1,6 +1,6 @@
-package com.picpay.bankapi.account;
+package com.picpay.bankapi.repository;
 
-import com.picpay.bankapi.account.Account;
+import com.picpay.bankapi.entity.Account;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;

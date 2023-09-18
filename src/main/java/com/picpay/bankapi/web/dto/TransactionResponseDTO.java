@@ -1,4 +1,4 @@
-package com.picpay.bankapi.transaction;
+package com.picpay.bankapi.web.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
