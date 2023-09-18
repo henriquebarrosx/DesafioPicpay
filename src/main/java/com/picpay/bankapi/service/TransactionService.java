@@ -1,28 +1,36 @@
-package com.picpay.bankapi.transaction;
+package com.picpay.bankapi.service;
 
-import com.picpay.bankapi.account.Account;
-import com.picpay.bankapi.email.EmailService;
-import com.picpay.bankapi.account.AccountService;
-import com.picpay.bankapi.account.AccountTypeEnum;
-import com.picpay.bankapi.exception.NotFoundException;
-import com.picpay.bankapi.exception.IllegalOperationException;
-
-import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.picpay.bankapi.web.dto.EmailDTO;
 import lombok.AllArgsConstructor;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
+import com.picpay.bankapi.entity.Account;
+import com.picpay.bankapi.entity.Transaction;
+import com.picpay.bankapi.web.dto.TransactionDTO;
+import com.picpay.bankapi.entity.AccountTypeEnum;
+import com.picpay.bankapi.web.dto.NewTransactionDTO;
+import com.picpay.bankapi.exception.NotFoundException;
+import com.picpay.bankapi.web.mapper.TransactionDTOMapper;
+import com.picpay.bankapi.repository.TransactionRepository;
+import com.picpay.bankapi.exception.IllegalOperationException;
 
 @Service
 @AllArgsConstructor
 public class TransactionService {
     private final TransactionRepository transactionRepository;
+    private final TransactionDTOMapper transactionDTOMapper;
     private final AccountService accountService;
     private final EmailService emailService;
 
-    public Transaction createTransaction(TransactionDTO newTransactionParams) {
+    public Transaction createTransaction(NewTransactionDTO newTransactionParams) {
         var payerAccount = accountService.findById(newTransactionParams.payerId());
         var payeeAccount = accountService.findById(newTransactionParams.payeeId());
 
@@ -31,15 +39,8 @@ public class TransactionService {
 
         accountService.subtractBalance(payerAccount, transaction.getValue());
         accountService.increaseBalance(payeeAccount, transaction.getValue());
-
-        var emailMessage = "You received a transaction of " + parseTransactionValueToCurrency(transaction.getValue());
-        emailService.sendEmail(payeeAccount, emailMessage);
-
+        emailService.sendEmail(buildNewTransactionReceivedEmailDTO(transaction));
         return transactionRepository.save(transaction);
-    }
-
-    String parseTransactionValueToCurrency(BigDecimal amount) {
-        return NumberFormat.getCurrencyInstance().format(amount);
     }
 
     public Transaction createChargeback(Long transactionTargetId) {
@@ -51,7 +52,6 @@ public class TransactionService {
 
         var chargeback = buildChargeback(transactionTarget.getValue(), payeeAccount, payerAccount);
         transactionRepository.save(chargeback);
-
         blockNewChargebackRequests(transactionTarget);
 
         accountService.increaseBalance(payerAccount, transactionTarget.getValue());
@@ -93,6 +93,15 @@ public class TransactionService {
         transaction.setWasReversed(true);
         transaction.setUpdatedAt(LocalDateTime.now());
         transactionRepository.save(transaction);
+    }
+
+    private EmailDTO buildNewTransactionReceivedEmailDTO(Transaction transaction) {
+        return EmailDTO.builder()
+                .email(transaction.getPayee().getEmail())
+                .subject("New transaction received")
+                .content("You received a transaction of " + NumberFormat.getCurrencyInstance().format(transaction.getValue()))
+                .sendDate(Date.from(transaction.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant()))
+                .build();
     }
 
     private Transaction buildDefaulTransaction(BigDecimal amount, Account payer, Account payee) {
