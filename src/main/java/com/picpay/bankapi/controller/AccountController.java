@@ -4,6 +4,7 @@ import com.picpay.bankapi.web.dto.AccountDTO;
 import com.picpay.bankapi.web.dto.AccountIdDTO;
 import com.picpay.bankapi.web.dto.NewAccountDTO;
 import com.picpay.bankapi.service.AccountService;
+import com.picpay.bankapi.web.mapper.NewAccountDTOMapper;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,12 +18,12 @@ import java.util.List;
 @RequestMapping("/api/accounts/v1")
 public class AccountController {
     private final AccountService accountService;
+    private final NewAccountDTOMapper newAccountDTOMapper;
 
     @PostMapping("/sign-up")
     public ResponseEntity<AccountIdDTO> signUp(@Valid @RequestBody NewAccountDTO newAccountDTO) {
-        var account = accountService.createAccount(newAccountDTO);
-        var accountId = new AccountIdDTO(account.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(accountId);
+        var account = accountService.createAccount(newAccountDTOMapper.apply(newAccountDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new AccountIdDTO(account.getId()));
     }
 
     @GetMapping

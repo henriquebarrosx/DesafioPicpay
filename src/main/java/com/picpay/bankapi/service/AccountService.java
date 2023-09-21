@@ -5,11 +5,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.picpay.bankapi.entity.Account;
-import com.picpay.bankapi.repository.AccountRepository;
 import com.picpay.bankapi.web.dto.AccountDTO;
-import com.picpay.bankapi.web.dto.NewAccountDTO;
+import com.picpay.bankapi.repository.AccountRepository;
 import com.picpay.bankapi.web.mapper.AccountDTOMapper;
-import com.picpay.bankapi.web.mapper.NewAccountDTOMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,14 +21,12 @@ import com.picpay.bankapi.exception.IllegalOperationException;
 public class AccountService {
     private final AccountDTOMapper accountDTOMapper;
     private final AccountRepository accountRepository;
-    private final NewAccountDTOMapper newAccountDTOMapper;
 
-    public Account createAccount(NewAccountDTO newAccountDTO) {
-        Account account = newAccountDTOMapper.apply(newAccountDTO);
+    public Account createAccount(Account account) {
         log.info("Creating new account: {}", account);
 
         var accountWithCpfCnpjOrEmail = accountRepository
-                .findByCpfCnpjOrEmail(newAccountDTO.getCpfCnpj(), newAccountDTO.getEmail());
+                .findByCpfCnpjOrEmail(account.getCpfCnpj(), account.getEmail());
 
         if (accountWithCpfCnpjOrEmail.isPresent()) {
             throw new IllegalOperationException("CPF/CNPJ or e-mail already registered.");
