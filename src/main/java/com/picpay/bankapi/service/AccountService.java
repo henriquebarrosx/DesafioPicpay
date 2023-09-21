@@ -2,24 +2,20 @@ package com.picpay.bankapi.service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.picpay.bankapi.entity.Account;
-import com.picpay.bankapi.web.dto.AccountDTO;
-import com.picpay.bankapi.repository.AccountRepository;
-import com.picpay.bankapi.web.mapper.AccountDTOMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import com.picpay.bankapi.entity.Account;
 import com.picpay.bankapi.exception.NotFoundException;
+import com.picpay.bankapi.repository.AccountRepository;
 import com.picpay.bankapi.exception.IllegalOperationException;
 
 @Service
 @Slf4j
 @AllArgsConstructor
 public class AccountService {
-    private final AccountDTOMapper accountDTOMapper;
     private final AccountRepository accountRepository;
 
     public Account createAccount(Account account) {
@@ -54,11 +50,8 @@ public class AccountService {
                 .orElseThrow(() -> new NotFoundException(id));
     }
 
-    public List<AccountDTO> findAll() {
+    public List<Account> findAll() {
         log.info("Finding all accounts");
-        return accountRepository
-                .findAll().stream()
-                .map(accountDTOMapper)
-                .collect(Collectors.toList());
+        return accountRepository.findAll();
     }
 }

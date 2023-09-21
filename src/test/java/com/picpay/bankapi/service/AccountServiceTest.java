@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -100,6 +102,24 @@ class AccountServiceTest {
     }
 
     @Test
-    void findAll() {
+    void shouldReturnEmptyAccountList() {
+        List<Account> expected = new ArrayList<>();
+
+        Mockito.when(accountRepository.findAll()).thenReturn(expected);
+        List<Account> accounts = accountService.findAll();
+
+        Mockito.verify(accountRepository, Mockito.times(1)).findAll();
+        Assertions.assertEquals(expected, accounts);
+    }
+
+    @Test
+    void shouldReturnFilledAccountList() {
+        List<Account> expected = List.of(AccountBuilder.buildCreatedAccount());
+
+        Mockito.when(accountRepository.findAll()).thenReturn(expected);
+        List<Account> accounts = accountService.findAll();
+
+        Mockito.verify(accountRepository, Mockito.times(1)).findAll();
+        Assertions.assertEquals(expected, accounts);
     }
 }
