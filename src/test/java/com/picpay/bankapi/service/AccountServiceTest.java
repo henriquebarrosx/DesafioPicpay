@@ -76,8 +76,14 @@ class AccountServiceTest {
     }
 
     @Test
-    void findById() {
+    void shouldFindAccountById() {
+        Account expected = AccountBuilder.buildCreatedAccount();
 
+        Mockito.when(accountRepository.findById(expected.getId()))
+                        .thenReturn(Optional.of(expected));
+
+        accountService.findById(expected.getId());
+        Mockito.verify(accountRepository, Mockito.times(1)).findById(expected.getId());
     }
 
     @Test
