@@ -2,6 +2,7 @@ package com.picpay.bankapi.service;
 
 import com.picpay.bankapi.exception.IllegalOperationException;
 import com.picpay.bankapi.repository.AccountRepository;
+import com.picpay.bankapi.exception.NotFoundException;
 import com.picpay.bankapi.builders.AccountBuilder;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -82,7 +83,19 @@ class AccountServiceTest {
         Mockito.when(accountRepository.findById(expected.getId()))
                         .thenReturn(Optional.of(expected));
 
-        accountService.findById(expected.getId());
+        Account actual = accountService.findById(expected.getId());
+        Mockito.verify(accountRepository, Mockito.times(1)).findById(expected.getId());
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    void shouldNotFindAccountById() {
+        Account expected = AccountBuilder.buildCreatedAccount();
+
+        Mockito.when(accountRepository.findById(expected.getId()))
+                .thenReturn(Optional.empty());
+
+        Assertions.assertThrows(NotFoundException.class, () -> accountService.findById(expected.getId()));
         Mockito.verify(accountRepository, Mockito.times(1)).findById(expected.getId());
     }
 
