@@ -1,0 +1,30 @@
+spring:
+    datasource:
+        url: jdbc:h2://mem:db;DB_CLOSE_DELAY:-1
+        username: sa
+        password: sa
+        driver-class-name: org.h2.Driver
+        
+    mail:
+        properties:
+            mail:
+                host: ${MAIL_HOST:sandbox.smtp.mailtrap.io}
+                username: ${MAIL_USERNAME:8f7a5a811b2b68}
+                password: ${MAIL_PASSWORD:4da4e95f30cca4}
+                smtp:
+                    port: 2525
+                    auth: true
+                    starttls:
+                        enabled: true
+                        required: true
+                transport:
+                    protocol: smtp
+    
+    jpa:
+        show-sql: false
+        hibernate:
+            ddl-auto: create-drop
+        properties:
+            hibernate:
+                format_sql: true
+    
