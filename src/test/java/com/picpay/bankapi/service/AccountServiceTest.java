@@ -1,5 +1,6 @@
 package com.picpay.bankapi.service;
 
+import com.picpay.bankapi.exception.IllegalOperationException;
 import com.picpay.bankapi.repository.AccountRepository;
 import com.picpay.bankapi.builders.AccountBuilder;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,7 +22,7 @@ class AccountServiceTest {
     AccountRepository accountRepository;
 
     @Test
-    void itShouldCreateNewAccount() {
+    void shouldCreateNewAccount() {
         Account account = AccountBuilder.buildNewAccountParams();
         Account expected = AccountBuilder.buildCreatedAccount();
 
@@ -36,6 +37,19 @@ class AccountServiceTest {
         Mockito.verify(accountRepository, Mockito.times(1)).findByCpfCnpjOrEmail(expected.getCpfCnpj(), expected.getEmail());
         Mockito.verify(accountRepository, Mockito.times(1)).save(account);
         Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    void shouldReturnUserAlreadyExistExceptionWhenCreatingNewAccount() {
+        Account account = AccountBuilder.buildNewAccountParams();
+        Account expected = AccountBuilder.buildCreatedAccount();
+
+        Mockito.when(accountRepository.findByCpfCnpjOrEmail(account.getCpfCnpj(), account.getEmail()))
+                .thenReturn(Optional.of(expected));
+
+        Assertions.assertThrows(IllegalOperationException.class, () -> accountService.createAccount(account));
+        Mockito.verify(accountRepository, Mockito.times(1)).findByCpfCnpjOrEmail(expected.getCpfCnpj(), expected.getEmail());
+        Mockito.verify(accountRepository, Mockito.never()).save(account);
     }
 
     @Test
