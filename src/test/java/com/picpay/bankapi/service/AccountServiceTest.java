@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,15 +54,30 @@ class AccountServiceTest {
     }
 
     @Test
-    void increaseBalance() {
+    void shouldIncreaseAccountBalance() {
+        Account expected = AccountBuilder.buildCreatedAccount();
+        BigDecimal amount = BigDecimal.valueOf(100.0);
+
+        accountService.increaseBalance(expected, amount);
+
+        Assertions.assertEquals(expected.getBalance(), BigDecimal.valueOf(200.0));
+        Mockito.verify(accountRepository, Mockito.times(1)).save(expected);
     }
 
     @Test
-    void subtractBalance() {
+    void shouldSubtractAccountBalance() {
+        Account expected = AccountBuilder.buildCreatedAccount();
+        BigDecimal amount = BigDecimal.valueOf(25.0);
+
+        accountService.subtractBalance(expected, amount);
+
+        Assertions.assertEquals(expected.getBalance(), BigDecimal.valueOf(75.0));
+        Mockito.verify(accountRepository, Mockito.times(1)).save(expected);
     }
 
     @Test
     void findById() {
+
     }
 
     @Test
