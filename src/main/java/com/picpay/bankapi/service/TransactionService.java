@@ -1,8 +1,6 @@
 package com.picpay.bankapi.service;
 
 import java.text.NumberFormat;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -42,24 +40,25 @@ public class TransactionService {
 
         accountService.subtractBalance(payerAccount, transaction.getValue());
         accountService.increaseBalance(payeeAccount, transaction.getValue());
+        Transaction savedTransaction = transactionRepository.save(transaction);
         emailService.sendEmail(buildNewTransactionReceivedEmailDTO(transaction));
-        return transactionRepository.save(transaction);
+        return savedTransaction;
     }
 
-    public Transaction createChargeback(Long transactionTargetId) {
-        var transactionTarget = findById(transactionTargetId);
-        validateIfAlreadyBeenReversed(transactionTarget);
+    public Transaction createChargeback(Long transactionId) {
+        var transaction = findById(transactionId);
+        validateIfAlreadyBeenReversed(transaction);
 
-        var payerAccount = accountService.findById(transactionTarget.getPayer().getId());
-        var payeeAccount = accountService.findById(transactionTarget.getPayee().getId());
+        var payerAccount = accountService.findById(transaction.getPayer().getId());
+        var payeeAccount = accountService.findById(transaction.getPayee().getId());
 
-        var chargeback = buildChargeback(transactionTarget.getValue(), payeeAccount, payerAccount);
+        var chargeback = buildChargeback(transaction.getValue(), payeeAccount, payerAccount);
         log.info("Creating chargeback: {}", chargeback);
-        transactionRepository.save(chargeback);
-        blockNewChargebackRequests(transactionTarget);
 
-        accountService.increaseBalance(payerAccount, transactionTarget.getValue());
-        accountService.subtractBalance(payeeAccount, transactionTarget.getValue());
+        blockNewChargebackRequests(transaction);
+        accountService.increaseBalance(payerAccount, transaction.getValue());
+        accountService.subtractBalance(payeeAccount, transaction.getValue());
+        transactionRepository.save(chargeback);
 
         return chargeback;
     }
@@ -70,12 +69,9 @@ public class TransactionService {
                 .orElseThrow(() -> new NotFoundException(String.format("Transaction %s not found.", transactionId)));
     }
 
-    public List<TransactionDTO> findAll() {
+    public List<Transaction> findAll() {
         log.info("Finding all transactions");
-        return transactionRepository
-                .findAll().stream()
-                .map(transactionDTOMapper)
-                .collect(Collectors.toList());
+        return transactionRepository.findAll();
     }
 
     private void validateTransactionRegistration(Transaction transaction, Account payerAccount, Account payeeAccount) {

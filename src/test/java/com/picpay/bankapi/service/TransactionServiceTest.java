@@ -1,22 +1,28 @@
 package com.picpay.bankapi.service;
 
-import com.picpay.bankapi.builders.EmailBuilder;
 import com.picpay.bankapi.exception.IllegalOperationException;
 import com.picpay.bankapi.repository.TransactionRepository;
 import com.picpay.bankapi.builders.TransactionBuilder;
+import com.picpay.bankapi.exception.NotFoundException;
 import com.picpay.bankapi.builders.AccountBuilder;
+import com.picpay.bankapi.builders.EmailBuilder;
+import com.picpay.bankapi.web.dto.EmailDTO;
+import com.picpay.bankapi.entity.Account;
+
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.mail.MailSendException;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.picpay.bankapi.entity.Transaction;
-import com.picpay.bankapi.web.dto.EmailDTO;
-import com.picpay.bankapi.entity.Account;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Optional;
 import java.util.List;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
@@ -45,13 +51,10 @@ class TransactionServiceTest {
                 .thenReturn(payer)
                 .thenReturn(payee);
 
-        var exception = Assertions.assertThrows(
-                IllegalOperationException.class,
-                () -> transactionService.createTransaction(amount, payer.getId(), payee.getId())
-        );
-
-        Assertions.assertEquals("Only common user type can send transactions.", exception.getMessage());
         Mockito.verify(transactionRepository, Mockito.never()).save(ArgumentMatchers.any());
+        assertThatThrownBy(() -> transactionService.createTransaction(amount, payer.getId(), payee.getId()))
+                .isExactlyInstanceOf(IllegalOperationException.class)
+                .hasMessageContaining("Only common user type can send transactions.");
     }
 
     @Test
@@ -64,15 +67,12 @@ class TransactionServiceTest {
         Mockito.when(accountService.findById(ArgumentMatchers.any()))
                 .thenReturn(payer);
 
-        var exception = Assertions.assertThrows(
-                IllegalOperationException.class,
-                () -> transactionService.createTransaction(amount, payer.getId(), payer.getId())
-        );
-
-        Assertions.assertEquals("Payer and payee account should be different.", exception.getMessage());
-        Mockito.verify(transactionRepository, Mockito.never()).save(ArgumentMatchers.any());
+        assertThatThrownBy(() -> transactionService.createTransaction(amount, payer.getId(), payer.getId()))
+                .isExactlyInstanceOf(IllegalOperationException.class)
+                .hasMessageContaining("Payer and payee account should be different.");
         Mockito.verify(accountService, Mockito.times(2)).findById(accountsIdCaptor.capture());
-        Assertions.assertEquals(List.of(payer.getId(), payer.getId()), accountsIdCaptor.getAllValues());
+        assertThat(accountsIdCaptor.getAllValues()).isEqualTo(List.of(payer.getId(), payer.getId()));
+        Mockito.verify(transactionRepository, Mockito.never()).save(ArgumentMatchers.any());
     }
 
     @Test
@@ -87,13 +87,10 @@ class TransactionServiceTest {
                 .thenReturn(payer)
                 .thenReturn(payee);
 
-        var exception = Assertions.assertThrows(
-                IllegalOperationException.class,
-                () -> transactionService.createTransaction(amount, payer.getId(), payer.getId())
-        );
-
-        Assertions.assertEquals("insufficient balance.", exception.getMessage());
         Mockito.verify(transactionRepository, Mockito.never()).save(ArgumentMatchers.any());
+        assertThatThrownBy(() -> transactionService.createTransaction(amount, payer.getId(), payer.getId()))
+                .isExactlyInstanceOf(IllegalOperationException.class)
+                .hasMessageContaining("insufficient balance.");
     }
 
     @Test
@@ -116,7 +113,7 @@ class TransactionServiceTest {
         Transaction result = transactionService
                 .createTransaction(amount, payer.getId(), payee.getId());
 
-        Assertions.assertEquals(expectedBalance, result.getPayer().getBalance());
+        assertThat(result.getPayer().getBalance()).isEqualTo(expectedBalance);
     }
 
     @Test
@@ -139,7 +136,7 @@ class TransactionServiceTest {
         Transaction result = transactionService
                 .createTransaction(amount, payer.getId(), payee.getId());
 
-        Assertions.assertEquals(expectedBalance, result.getPayee().getBalance());
+        assertThat(result.getPayee().getBalance()).isEqualTo(expectedBalance);
     }
 
     @Test
@@ -161,7 +158,7 @@ class TransactionServiceTest {
         Transaction result = transactionService
                 .createTransaction(amount, payer.getId(), payee.getId());
 
-        Assertions.assertEquals(expected, result);
+        assertThat(result).isEqualTo(expected);
     }
 
     @Test
@@ -185,7 +182,8 @@ class TransactionServiceTest {
         transactionService
                 .createTransaction(amount, payer.getId(), payee.getId());
 
-        Mockito.verify(emailService, Mockito.times(1)).sendEmail(expected);
+        Mockito.verify(emailService, Mockito.times(1))
+                .sendEmail(expected);
     }
 
     @Test
@@ -204,19 +202,98 @@ class TransactionServiceTest {
                 .when(emailService)
                 .sendEmail(ArgumentMatchers.any());
 
-        Assertions.assertThrows(
-                MailSendException.class,
-                () -> transactionService
-                        .createTransaction(amount, payer.getId(), payee.getId())
-        );
+        assertThatThrownBy(() -> transactionService.createTransaction(amount, payer.getId(), payee.getId()))
+                .isExactlyInstanceOf(MailSendException.class);
     }
 
     @Test
-    void createChargeback() {
+    void shouldReturnIllegalOperationExceptionWhenGeneratingChargebackFromReversedTransaction() {
+        Transaction transaction = TransactionBuilder.buildTransactionWithId(1L);
+        Transaction reversedTransaction = TransactionBuilder.buildReversedFrom(transaction);
+
+        Mockito.when(transactionRepository.findById(ArgumentMatchers.any()))
+                .thenReturn(Optional.of(reversedTransaction));
+
+        assertThatThrownBy(() -> transactionService.createChargeback(transaction.getId()))
+                .isExactlyInstanceOf(IllegalOperationException.class)
+                .hasMessageContaining("Transaction only can be reverted once.");
     }
 
     @Test
-    void findById() {
+    void shouldReturnIllegalOperationExceptionWhenTryGenerateChargebackFromChargebackTransactionType() {
+        Transaction transaction = TransactionBuilder.buildTransactionWithId(1L);
+        Transaction chargeback = TransactionBuilder.buildChargebackFrom(transaction);
+
+        Mockito.when(transactionRepository.findById(ArgumentMatchers.any()))
+                .thenReturn(Optional.of(chargeback));
+
+        assertThatThrownBy(() -> transactionService.createChargeback(transaction.getId()))
+                .isExactlyInstanceOf(IllegalOperationException.class)
+                .hasMessageContaining("The transaction is not able to be reversed.");
+    }
+
+    @Test
+    void shouldValidateIfTransactionUpdatedWithReversedWhenCreatingChargeback() {
+        Transaction transaction = TransactionBuilder.buildTransactionWithId(1L);
+        Transaction reversedTransaction = TransactionBuilder.buildReversedFrom(transaction);
+        ArgumentCaptor<Transaction> transactionArgCaptor = ArgumentCaptor.forClass(Transaction.class);
+
+        Mockito.when(transactionRepository.findById(ArgumentMatchers.any()))
+                .thenReturn(Optional.of(transaction));
+
+        Mockito.when(accountService.findById(ArgumentMatchers.any()))
+                .thenReturn(transaction.getPayer())
+                .thenReturn(transaction.getPayee());
+
+        Mockito.when(transactionRepository.save(ArgumentMatchers.any()))
+                .thenReturn(ArgumentMatchers.any());
+
+        transactionService.createChargeback(transaction.getId());
+
+        Mockito.verify(transactionRepository, Mockito.times(2))
+                .save(transactionArgCaptor.capture());
+        assertThat(transactionArgCaptor.getAllValues())
+                .asList()
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("createdAt", "updatedAt")
+                .contains(reversedTransaction);
+    }
+
+    @Test
+    void shouldSaveChargebackWithReversedWhenCreatingChargeback() {
+        Transaction transaction = TransactionBuilder.buildTransactionWithId(1L);
+        Transaction chargeback = TransactionBuilder.buildChargebackFrom(transaction);
+        ArgumentCaptor<Transaction> transactionArgCaptor = ArgumentCaptor.forClass(Transaction.class);
+
+        Mockito.when(transactionRepository.findById(ArgumentMatchers.any()))
+                .thenReturn(Optional.of(transaction));
+
+        Mockito.when(accountService.findById(ArgumentMatchers.any()))
+                .thenReturn(transaction.getPayer())
+                .thenReturn(transaction.getPayee());
+
+        Mockito.when(transactionRepository.save(ArgumentMatchers.any()))
+                .thenReturn(ArgumentMatchers.any());
+
+        transactionService.createChargeback(transaction.getId());
+
+        Mockito.verify(transactionRepository, Mockito.times(2))
+                .save(transactionArgCaptor.capture());
+        assertThat(transactionArgCaptor.getAllValues())
+                .asList()
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("createdAt", "updatedAt")
+                .contains(chargeback);
+    }
+
+    @Test
+    void shouldReturnNotFoundExceptionWhenFindingTransactionById() {
+        Long expectedTransactionId = 1L;
+
+        Mockito.when(transactionRepository.findById(ArgumentMatchers.any()))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> transactionService.findById(expectedTransactionId))
+                .isExactlyInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Transaction " + expectedTransactionId + " not found.");
     }
 
     @Test

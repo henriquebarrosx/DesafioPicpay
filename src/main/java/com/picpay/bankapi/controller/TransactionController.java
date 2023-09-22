@@ -6,6 +6,7 @@ import com.picpay.bankapi.web.dto.NewTransactionDTO;
 import com.picpay.bankapi.web.dto.TransactionDTO;
 import com.picpay.bankapi.web.dto.TransactionIdDTO;
 import com.picpay.bankapi.web.dto.TransactionResponseDTO;
+import com.picpay.bankapi.web.mapper.TransactionDTOMapper;
 import com.picpay.bankapi.web.mapper.TransactionResponseDTOMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @RestController
@@ -20,6 +22,7 @@ import java.util.List;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final TransactionDTOMapper transactionDTOMapper;
     private final TransactionResponseDTOMapper transactionResponseDTOMapper;
 
     @PostMapping
@@ -36,7 +39,11 @@ public class TransactionController {
 
     @GetMapping
     public ResponseEntity<List<TransactionDTO>> getAll() {
-        var transactions = transactionService.findAll();
+        var transactions = transactionService.findAll()
+                .stream()
+                .map(transactionDTOMapper)
+                .collect(Collectors.toList());
+
         return ResponseEntity.status(HttpStatus.OK).body(transactions);
     }
 

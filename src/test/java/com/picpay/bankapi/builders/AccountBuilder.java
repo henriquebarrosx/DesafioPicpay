@@ -53,6 +53,21 @@ public class AccountBuilder {
                 .build();
     }
 
+    public static Account buildCommonAccountTypeWithId(Long id) {
+        return Account
+                .builder()
+                .id(id)
+                .type(AccountTypeEnum.COMMON)
+                .name("John Doe")
+                .balance(BigDecimal.valueOf(100))
+                .cpfCnpj("86307077042")
+                .email("john.doe@mail.com")
+                .password("12345678")
+                .createdAt(LocalDateTime.of(2023, Month.SEPTEMBER, 1, 10, 0, 0))
+                .updatedAt(LocalDateTime.of(2023, Month.SEPTEMBER, 1, 10, 0, 0))
+                .build();
+    }
+
     public static Account buildShopkeeperAccountType(BigDecimal balance) {
         return Account
                 .builder()
