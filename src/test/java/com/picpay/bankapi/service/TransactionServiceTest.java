@@ -297,6 +297,26 @@ class TransactionServiceTest {
     }
 
     @Test
-    void findAll() {
+    void shouldReturnEmptyTransactionList() {
+        Mockito.when(transactionRepository.findAll())
+                .thenReturn(new ArrayList<>());
+
+        assertThat(transactionService.findAll())
+                .isEqualTo(List.of());
+    }
+
+    @Test
+    void shouldReturnTransactionListWithThreeItems() {
+        Mockito.when(transactionRepository.findAll())
+                .thenReturn(List.of(
+                        TransactionBuilder.buildTransactionWithId(1L),
+                        TransactionBuilder.buildTransactionWithId(2L),
+                        TransactionBuilder.buildTransactionWithId(3L)
+                ));
+
+        assertThat(transactionService.findAll())
+                .asList()
+                .size()
+                .isEqualTo(3);
     }
 }
