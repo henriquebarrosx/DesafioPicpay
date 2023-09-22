@@ -1,4 +1,10 @@
 package com.picpay.bankapi.web.dto;
 
-public record TransactionIdDTO(Long id) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class TransactionIdDTO {
+    private Long id;
 }

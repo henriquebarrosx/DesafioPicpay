@@ -28,7 +28,7 @@ class AccountServiceTest {
     @Test
     void shouldCreateNewAccount() {
         Account account = AccountBuilder.buildNewAccountParams();
-        Account expected = AccountBuilder.buildCreatedAccount();
+        Account expected = AccountBuilder.buildStoredAccount();
 
         Mockito.when(accountRepository.findByCpfCnpjOrEmail(account.getCpfCnpj(), account.getEmail()))
                 .thenReturn(Optional.empty());
@@ -46,7 +46,7 @@ class AccountServiceTest {
     @Test
     void shouldReturnUserAlreadyExistExceptionWhenCreatingNewAccount() {
         Account account = AccountBuilder.buildNewAccountParams();
-        Account expected = AccountBuilder.buildCreatedAccount();
+        Account expected = AccountBuilder.buildStoredAccount();
 
         Mockito.when(accountRepository.findByCpfCnpjOrEmail(account.getCpfCnpj(), account.getEmail()))
                 .thenReturn(Optional.of(expected));
@@ -58,7 +58,7 @@ class AccountServiceTest {
 
     @Test
     void shouldIncreaseAccountBalance() {
-        Account expected = AccountBuilder.buildCreatedAccount();
+        Account expected = AccountBuilder.buildStoredAccount();
         BigDecimal amount = BigDecimal.valueOf(100.0);
 
         accountService.increaseBalance(expected, amount);
@@ -69,7 +69,7 @@ class AccountServiceTest {
 
     @Test
     void shouldSubtractAccountBalance() {
-        Account expected = AccountBuilder.buildCreatedAccount();
+        Account expected = AccountBuilder.buildStoredAccount();
         BigDecimal amount = BigDecimal.valueOf(25.0);
 
         accountService.subtractBalance(expected, amount);
@@ -80,7 +80,7 @@ class AccountServiceTest {
 
     @Test
     void shouldFindAccountById() {
-        Account expected = AccountBuilder.buildCreatedAccount();
+        Account expected = AccountBuilder.buildStoredAccount();
 
         Mockito.when(accountRepository.findById(expected.getId()))
                         .thenReturn(Optional.of(expected));
@@ -92,7 +92,7 @@ class AccountServiceTest {
 
     @Test
     void shouldNotFindAccountById() {
-        Account expected = AccountBuilder.buildCreatedAccount();
+        Account expected = AccountBuilder.buildStoredAccount();
 
         Mockito.when(accountRepository.findById(expected.getId()))
                 .thenReturn(Optional.empty());
@@ -114,7 +114,7 @@ class AccountServiceTest {
 
     @Test
     void shouldReturnFilledAccountList() {
-        List<Account> expected = List.of(AccountBuilder.buildCreatedAccount());
+        List<Account> expected = List.of(AccountBuilder.buildStoredAccount());
 
         Mockito.when(accountRepository.findAll()).thenReturn(expected);
         List<Account> accounts = accountService.findAll();

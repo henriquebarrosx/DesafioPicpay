@@ -10,18 +10,20 @@ import java.time.LocalDateTime;
 import com.picpay.bankapi.web.dto.EmailDTO;
 import lombok.AllArgsConstructor;
 import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import com.picpay.bankapi.entity.Account;
 import com.picpay.bankapi.entity.Transaction;
 import com.picpay.bankapi.web.dto.TransactionDTO;
 import com.picpay.bankapi.entity.AccountTypeEnum;
-import com.picpay.bankapi.web.dto.NewTransactionDTO;
 import com.picpay.bankapi.exception.NotFoundException;
 import com.picpay.bankapi.web.mapper.TransactionDTOMapper;
 import com.picpay.bankapi.repository.TransactionRepository;
 import com.picpay.bankapi.exception.IllegalOperationException;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class TransactionService {
@@ -30,12 +32,13 @@ public class TransactionService {
     private final AccountService accountService;
     private final EmailService emailService;
 
-    public Transaction createTransaction(NewTransactionDTO newTransactionParams) {
-        var payerAccount = accountService.findById(newTransactionParams.payerId());
-        var payeeAccount = accountService.findById(newTransactionParams.payeeId());
+    public Transaction createTransaction(BigDecimal amount, Long payerId, Long payeeId) {
+        var payerAccount = accountService.findById(payerId);
+        var payeeAccount = accountService.findById(payeeId);
 
-        var transaction = buildDefaulTransaction(newTransactionParams.value(), payerAccount, payeeAccount);
+        var transaction = buildDefaulTransaction(amount, payerAccount, payeeAccount);
         validateTransactionRegistration(transaction, payerAccount, payeeAccount);
+        log.info("Creating transaction: {}", transaction);
 
         accountService.subtractBalance(payerAccount, transaction.getValue());
         accountService.increaseBalance(payeeAccount, transaction.getValue());
@@ -51,6 +54,7 @@ public class TransactionService {
         var payeeAccount = accountService.findById(transactionTarget.getPayee().getId());
 
         var chargeback = buildChargeback(transactionTarget.getValue(), payeeAccount, payerAccount);
+        log.info("Creating chargeback: {}", chargeback);
         transactionRepository.save(chargeback);
         blockNewChargebackRequests(transactionTarget);
 
@@ -61,11 +65,13 @@ public class TransactionService {
     }
 
     public Transaction findById(Long transactionId) {
+        log.info("Finding transaction by id: {}", transactionId);
         return transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new NotFoundException(String.format("Transaction %s not found.", transactionId)));
     }
 
     public List<TransactionDTO> findAll() {
+        log.info("Finding all transactions");
         return transactionRepository
                 .findAll().stream()
                 .map(transactionDTOMapper)
@@ -107,7 +113,6 @@ public class TransactionService {
                 .email(transaction.getPayee().getEmail())
                 .subject("New transaction received")
                 .content("You received a transaction of " + NumberFormat.getCurrencyInstance().format(transaction.getValue()))
-                .sendDate(Date.from(transaction.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant()))
                 .build();
     }
 

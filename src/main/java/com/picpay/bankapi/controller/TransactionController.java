@@ -24,7 +24,13 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<TransactionResponseDTO> registerTransaction(@RequestBody NewTransactionDTO newTransactionDTO) {
-        var transaction = transactionService.createTransaction(newTransactionDTO);
+        var transaction = transactionService
+                .createTransaction(
+                        newTransactionDTO.value(),
+                        newTransactionDTO.payerId(),
+                        newTransactionDTO.payeeId()
+                );
+
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionResponseDTOMapper.apply(transaction));
     }
 
